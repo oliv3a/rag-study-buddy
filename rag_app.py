@@ -68,7 +68,12 @@ prompt = PromptTemplate.from_template(template)
 # Initializing the LLM and Constructing the RAG Chain 
 
 # Initialize the free Gemini model tier
-llm = ChatGoogleGenerativeAI(model="gemini-flash-latest", temperature=0)
+llm = ChatGoogleGenerativeAI(
+    model="gemini-3.5-flash-lite",
+    temperature=0,
+    timeout=30,      # fail after 30s instead of hanging
+    max_retries=2,   # retry twice, then give up
+)
 #temperature=0 makes answers consistent and factual (less “creative”)
 #ask same qn , same output ans
 # Helper function to stitch retrieved chunks into a single text block
