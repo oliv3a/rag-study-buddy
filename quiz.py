@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from langchain_core.prompts import PromptTemplate
 from rag import retriever, llm, format_docs
-
+from tracker import new_session_id, log_attempt, topic_stats
 
 # --- The "shapes" Gemini must reply in ---
 class QuizQuestion(BaseModel):
@@ -52,7 +52,8 @@ def grade_answer(q, student_answer):
 
 
 if __name__ == "__main__":
-    print("--- Quiz Mode --- (type 'exit' to quit)")
+    session_id = new_session_id()
+    print("--- Quiz Mode --- (type 'stats' for progress, 'exit' to quit)")
     while True:
         try:
             topic = input("\nTopic (e.g. quicksort, dijkstra): ").strip()
@@ -60,12 +61,17 @@ if __name__ == "__main__":
                 break
             if not topic:
                 continue
+            if topic.lower() == "stats":
+                for t, total, right in topic_stats():
+                    print(f"  {t}: {right}/{total} ({100 * right // total}%)")
+                continue
 
             q, docs, real_topic = generate_question(topic)
             print(f"\n❓ [{real_topic}] {q.question}")
             student = input("Your answer: ").strip()
 
             g = grade_answer(q, student)
+            log_attempt(session_id, real_topic, q.question, g.correct)  
             print("✅ Correct!" if g.correct else "❌ Not quite.")
             print(f"Feedback: {g.feedback}")
             print(f"Model answer: {q.answer}")
