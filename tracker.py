@@ -1,6 +1,7 @@
 import sqlite3
 import uuid
 from datetime import datetime
+import random
 
 DB_FILE = "progress.db"
 
@@ -43,6 +44,13 @@ def topic_stats():
             GROUP BY topic
             ORDER BY 1.0 * SUM(correct) / COUNT(*) ASC
         """).fetchall()
+
+def weakest_topic(all_topics):
+    stats = {t: (total, right) for t, total, right in topic_stats()}
+    untried = [t for t in all_topics if t not in stats]
+    if untried:
+        return random.choice(untried)
+    return min(stats, key=lambda t: stats[t][1] / stats[t][0])  # lowest accuracy
 
 
 if __name__ == "__main__":

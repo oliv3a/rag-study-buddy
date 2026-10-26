@@ -1,7 +1,9 @@
 from pydantic import BaseModel, Field
 from langchain_core.prompts import PromptTemplate
-from rag import retriever, llm, format_docs
-from tracker import new_session_id, log_attempt, topic_stats
+from rag import retriever, llm, format_docs, vector_db
+from tracker import new_session_id, log_attempt, topic_stats, weakest_topic
+
+ALL_TOPICS = sorted({m["topic"] for m in vector_db.get()["metadatas"]})
 
 # --- The "shapes" Gemini must reply in ---
 class QuizQuestion(BaseModel):
@@ -37,9 +39,12 @@ grade_chain = GRADE_PROMPT | llm.with_structured_output(Grade)
 
 # --- Functions ---
 def generate_question(topic):
-    docs = retriever.invoke(topic)
+    if topic in ALL_TOPICS:
+        docs = vector_db.similarity_search(topic, k=2, filter={"topic": topic})
+    else:
+        docs = retriever.invoke(topic)
     q = question_chain.invoke({"context": format_docs(docs)})
-    real_topic = docs[0].metadata.get("topic", "general")  # from the PDF, not the AI
+    real_topic = docs[0].metadata.get("topic", "general")
     return q, docs, real_topic
 
 
@@ -65,6 +70,9 @@ if __name__ == "__main__":
                 for t, total, right in topic_stats():
                     print(f"  {t}: {right}/{total} ({100 * right // total}%)")
                 continue
+            if topic.lower() == "weak":
+                topic = weakest_topic(ALL_TOPICS)
+                print(f"🎯 Your weakest topic: {topic}")
 
             q, docs, real_topic = generate_question(topic)
             print(f"\n❓ [{real_topic}] {q.question}")
