@@ -23,10 +23,12 @@ def load_pdfs(folder):
         reader = PdfReader(os.path.join(folder, filename))
         for page_num, page in enumerate(reader.pages, start=1):
             text = page.extract_text() or ""
-            if text.strip():  # skip blank pages
+            if text.strip():
+                match = re.search(r"Topic:\s*(\S+)", text)   # find "Topic: dijkstra"
+                topic = match.group(1) if match else "general"
                 docs.append(Document(
                     page_content=text,
-                    metadata={"source": filename, "page": page_num},
+                    metadata={"source": filename, "page": page_num, "topic": topic},
                 ))
     return docs
 

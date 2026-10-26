@@ -1,13 +1,12 @@
 from pydantic import BaseModel, Field
 from langchain_core.prompts import PromptTemplate
-from rag import retriever, llm, format_docs  # reuse what rag.py already set up
+from rag import retriever, llm, format_docs
 
 
 # --- The "shapes" Gemini must reply in ---
 class QuizQuestion(BaseModel):
     question: str = Field(description="One short exam-style question")
     answer: str = Field(description="The correct answer in 1-2 sentences")
-    topic: str = Field(description="Topic in 1-3 words, e.g. 'quicksort'")
 
 
 class Grade(BaseModel):
@@ -36,11 +35,12 @@ question_chain = QUESTION_PROMPT | llm.with_structured_output(QuizQuestion)
 grade_chain = GRADE_PROMPT | llm.with_structured_output(Grade)
 
 
+# --- Functions ---
 def generate_question(topic):
-    """Find notes on the topic, then ask Gemini for a question about them."""
     docs = retriever.invoke(topic)
     q = question_chain.invoke({"context": format_docs(docs)})
-    return q, docs
+    real_topic = docs[0].metadata.get("topic", "general")  # from the PDF, not the AI
+    return q, docs, real_topic
 
 
 def grade_answer(q, student_answer):
@@ -61,8 +61,8 @@ if __name__ == "__main__":
             if not topic:
                 continue
 
-            q, docs = generate_question(topic)
-            print(f"\n❓ {q.question}")
+            q, docs, real_topic = generate_question(topic)
+            print(f"\n❓ [{real_topic}] {q.question}")
             student = input("Your answer: ").strip()
 
             g = grade_answer(q, student)
