@@ -9,8 +9,9 @@ from summary import summarize_session
 
 def chat(message, history):
     answer, sources = ask(message)
+    if "NOT_IN_NOTES" in answer:
+        return "🤷 That's not covered in your notes. Try asking about one of your SC2001 topics."
     return f"{answer}\n\n📄 *Sources: {' | '.join(sources)}*"
-
 
 
 def new_question(topic, state):
@@ -22,8 +23,10 @@ def new_question(topic, state):
         "q": q, "docs": docs, "topic": real_topic,
         "session": state.get("session") or new_session_id(),  # keep the same session
     }
-    return f"### ❓ [{real_topic}] {q.question}", "", "", state
-
+    note = ""
+    if not any(topic.lower() in t for t in ALL_TOPICS):
+        note = f"⚠️ *'{topic}' isn't a topic in your notes. Closest match: **{real_topic}***\n\n"
+    return f"{note}### ❓ [{real_topic}] {q.question}", "", "", state
 
 def submit_answer(answer, state):
     if "q" not in state:

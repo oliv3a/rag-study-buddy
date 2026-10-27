@@ -9,8 +9,10 @@ load_dotenv()
 DB_DIR = "chroma_db"
 
 PROMPT = PromptTemplate.from_template("""
-Use the following pieces of retrieved context to answer the question.
-If you don't know the answer, just say that you don't know.
+Answer the question using ONLY the context below. Do not use outside knowledge.
+If the context does not contain the answer, reply exactly:
+NOT_IN_NOTES
+
 Use three sentences maximum and keep the answer concise.
 
 Context: {context}
@@ -19,7 +21,6 @@ Question: {question}
 
 Answer:
 """)
-
 # Open the SAVED database (no re-embedding!)
 embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
 vector_db = Chroma(persist_directory=DB_DIR, embedding_function=embeddings)
