@@ -2,6 +2,9 @@ import gradio as gr
 from rag import ask
 from quiz import generate_question, grade_answer, ALL_TOPICS
 from tracker import new_session_id, log_attempt, weakest_topic
+import pandas as pd
+from tracker import topic_stats
+from summary import summarize_session
 
 
 def chat(message, history):
@@ -33,6 +36,16 @@ def submit_answer(answer, state):
     return (f"{verdict}\n\n**Feedback:** {g.feedback}\n\n"
             f"**Model answer:** {q.answer}\n\n📄 Review: {pages}"), state
 
+def load_stats():
+    df = pd.DataFrame(topic_stats(), columns=["topic", "attempts", "correct"])
+    df["accuracy"] = (100 * df["correct"] / df["attempts"]).round()
+    return df, df
+
+
+def end_session(state):
+    if "session" not in state:
+        return "Answer some quiz questions first!"
+    return summarize_session(state["session"])
 
 
 with gr.Blocks(title="SC2001 Study Buddy") as demo:
@@ -58,6 +71,16 @@ with gr.Blocks(title="SC2001 Study Buddy") as demo:
                       [question_md, answer_box, result_md, quiz_state])
         submit_btn.click(submit_answer, [answer_box, quiz_state],
                          [result_md, quiz_state])
+
+    with gr.Tab("📊 Stats"):
+        refresh_btn = gr.Button("🔄 Refresh stats")
+        chart = gr.BarPlot(x="topic", y="accuracy", title="Accuracy by topic (%)", y_lim=[0, 100])
+        table = gr.Dataframe()
+        summary_btn = gr.Button("🏁 End session & summarise", variant="primary")
+        summary_md = gr.Markdown()
+
+        refresh_btn.click(load_stats, None, [chart, table])
+        summary_btn.click(end_session, quiz_state, summary_md)
 
         
 demo.launch()
