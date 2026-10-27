@@ -5,3 +5,4 @@ langchain-chroma
 langchain-core
 pypdf
 python-dotenv
+gradio
