@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from langchain_core.prompts import PromptTemplate
 from rag import retriever, llm, format_docs, vector_db
 from tracker import new_session_id, log_attempt, topic_stats, weakest_topic
+from summary import summarize_session
 
 ALL_TOPICS = sorted({m["topic"] for m in vector_db.get()["metadatas"]})
 
@@ -58,7 +59,7 @@ def grade_answer(q, student_answer):
 
 if __name__ == "__main__":
     session_id = new_session_id()
-    print("--- Quiz Mode --- (type 'stats' for progress, 'exit' to quit)")
+    print("--- Quiz Mode --- (commands: 'weak', 'stats', 'exit')")
     while True:
         try:
             topic = input("\nTopic (e.g. quicksort, dijkstra): ").strip()
@@ -90,3 +91,7 @@ if __name__ == "__main__":
             break
         except Exception as e:
             print(f"Something went wrong: {e}")
+    try:
+        print(summarize_session(session_id))
+    except Exception as e:
+        print(f"(Couldn't generate summary: {e})")

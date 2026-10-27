@@ -61,3 +61,15 @@ if __name__ == "__main__":
     log_attempt(sid, "sorting-quicksort", "test q3", True)
     for topic, total, right in topic_stats():
         print(f"{topic}: {right}/{total} correct ({100 * right // total}%)")
+
+
+def session_stats(session_id):
+    """Like topic_stats, but only for one session."""
+    with connect() as conn:
+        return conn.execute("""
+            SELECT topic, COUNT(*), SUM(correct)
+            FROM attempts
+            WHERE session_id = ?
+            GROUP BY topic
+            ORDER BY 1.0 * SUM(correct) / COUNT(*) ASC
+        """, (session_id,)).fetchall()
