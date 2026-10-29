@@ -3,6 +3,7 @@ from langchain_core.prompts import PromptTemplate
 from rag import retriever, llm, format_docs, vector_db
 from tracker import new_session_id, log_attempt, topic_stats, weakest_topic
 from summary import summarize_session
+import random
 
 ALL_TOPICS = sorted({m["topic"] for m in vector_db.get()["metadatas"]})
 
@@ -41,13 +42,16 @@ grade_chain = GRADE_PROMPT | llm.with_structured_output(Grade)
 # --- Functions ---
 def generate_question(topic):
     if topic in ALL_TOPICS:
-        docs = vector_db.similarity_search(topic, k=2, filter={"topic": topic})
+        # pick a random chunk from this topic, so questions vary
+        chunks = vector_db.get(where={"topic": topic})["documents"]
+        seed = random.choice(chunks)
+        # then grab the 2 chunks closest to it, so the context fits together
+        docs = vector_db.similarity_search(seed, k=2, filter={"topic": topic})
     else:
         docs = retriever.invoke(topic)
     q = question_chain.invoke({"context": format_docs(docs)})
     real_topic = docs[0].metadata.get("topic", "general")
     return q, docs, real_topic
-
 
 def grade_answer(q, student_answer):
     return grade_chain.invoke({

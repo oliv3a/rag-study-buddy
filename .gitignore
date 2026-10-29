@@ -1,5 +1,7 @@
 .env
-chroma_db/
-__pycache__/
 venv/
-progress.db
+__pycache__/
+chroma_db/
+progress*.db
+docs/
+old_docs/

@@ -46,21 +46,11 @@ def topic_stats():
         """).fetchall()
 
 def weakest_topic(all_topics):
-    stats = {t: (total, right) for t, total, right in topic_stats()}
+    stats = {t: (total, right) for t, total, right in topic_stats() if t in all_topics}
     untried = [t for t in all_topics if t not in stats]
     if untried:
         return random.choice(untried)
     return min(stats, key=lambda t: stats[t][1] / stats[t][0])  # lowest accuracy
-
-
-if __name__ == "__main__":
-    # Quick self-test with fake data
-    sid = new_session_id()
-    log_attempt(sid, "dijkstra", "test q1", False)
-    log_attempt(sid, "dijkstra", "test q2", False)
-    log_attempt(sid, "sorting-quicksort", "test q3", True)
-    for topic, total, right in topic_stats():
-        print(f"{topic}: {right}/{total} correct ({100 * right // total}%)")
 
 
 def session_stats(session_id):
