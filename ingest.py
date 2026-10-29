@@ -10,7 +10,7 @@ from langchain_chroma import Chroma
 
 load_dotenv()
 
-DOCS_DIR = "docs"       # where your PDFs live
+DOCS_DIR = os.getenv("DOCS_DIR", "docs")     # where your PDFs live
 DB_DIR = "chroma_db"    # where the vector database is saved
 
 
