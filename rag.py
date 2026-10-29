@@ -37,9 +37,6 @@ def format_docs(docs):
 def ask(question):
     """Return (answer, sources) for a question."""
     docs = retriever.invoke(question)
-    for d in docs:
-        print(d.metadata.get("page"), d.page_content[:150])
-        print("---")
     answer = chain.invoke({"context": format_docs(docs), "question": question})
     sources = sorted({f"{d.metadata['source']}, p.{d.metadata['page']}" for d in docs})
     return answer, sources

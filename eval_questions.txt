@@ -1,0 +1,13 @@
+# Easy (one slide)
+ANSWER | What is thrashing?
+ANSWER | What does the dirty bit do during page replacement?
+ANSWER | What is the formula for effective access time in demand paging?
+ANSWER | What is the difference between global and local replacement?
+# Multi-slide
+ANSWER | Why does FIFO suffer from Belady's anomaly but LRU doesn't?
+ANSWER | How do the working-set model and the page-fault frequency scheme each prevent thrashing?
+ANSWER | Compare the counter and stack implementations of LRU.
+# Not in notes (should refuse)
+REFUSE | How does the TLB speed up address translation?
+REFUSE | What is a multilevel page table?
+REFUSE | How does copy-on-write work after fork()?
