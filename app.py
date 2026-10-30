@@ -1,6 +1,10 @@
 import os
 from dotenv import load_dotenv
 load_dotenv()
+if not os.path.exists("chroma_db"):
+    import ingest
+    ingest.main()
+
 MODULE = os.getenv("MODULE", "SC2005")
 import gradio as gr
 from rag import ask
