@@ -98,4 +98,4 @@ with gr.Blocks(title=f"{MODULE} Study Buddy") as demo:
         summary_btn.click(end_session, quiz_state, summary_md)
 
         
-demo.launch()
+demo.launch(server_name="0.0.0.0", server_port=int(os.getenv("PORT", 7860)))
