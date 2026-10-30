@@ -1,4 +1,5 @@
 from rag import retriever
+import time   # at the top
 
 # Answer key: (question, acceptable pages)
 TESTS = [
@@ -36,7 +37,7 @@ for i, (question, expected) in enumerate(TESTS, start=1):
     print(f"    Should find: {sorted(expected)}")
     print(f"    Bot found:   {fetched}")
     print("    ✅ Correct page found" if hit else "    ❌ Wrong page: bot looked in the wrong place")
-
+    time.sleep(2)   # stay under the free-tier rate limit
 score = 100 * hits // len(TESTS)
 print("\n" + "=" * 60)
 print(f"📊 RESULT: {hits}/{len(TESTS)} questions found the right page ({score}%)")

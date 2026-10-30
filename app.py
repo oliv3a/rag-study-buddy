@@ -16,7 +16,10 @@ from summary import summarize_session
 
 
 def chat(message, history):
-    answer, sources = ask(message)
+    try:
+        answer, sources = ask(message)
+    except Exception:
+        return "⏳ The bot is busy (API rate limit). Try again in a minute."
     if "NOT_IN_NOTES" in answer:
         return f"🤷 That's not covered in your notes. Try asking about one of your {MODULE} topics."
     return f"{answer}\n\n📄 *Sources: {' | '.join(sources)}*"
