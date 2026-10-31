@@ -13,7 +13,8 @@ from tracker import new_session_id, log_attempt, weakest_topic
 import pandas as pd
 from tracker import topic_stats
 from summary import summarize_session
-
+from fastapi import FastAPI, HTTPException
+import uvicorn
 
 def chat(message, history):
     try:
@@ -101,4 +102,24 @@ with gr.Blocks(title=f"{MODULE} Study Buddy") as demo:
         summary_btn.click(end_session, quiz_state, summary_md)
 
         
-demo.launch(server_name="0.0.0.0", server_port=int(os.getenv("PORT", 7860)))
+api = FastAPI()
+
+@api.get("/ask")
+def ask_api(q: str):
+    try:
+        answer, sources = ask(q)
+    except Exception:
+        raise HTTPException(status_code=503, detail="Rate limited, try again later")
+    in_notes = "NOT_IN_NOTES" not in answer
+    return {
+        "question": q,
+        "answer": answer if in_notes else f"That's not covered in your {MODULE} notes.",
+        "sources": sources if in_notes else [],
+        "in_notes": in_notes,
+    }
+
+# Gradio UI at "/", our API at "/ask"
+app = gr.mount_gradio_app(api, demo, path="/")
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", 7860)))
